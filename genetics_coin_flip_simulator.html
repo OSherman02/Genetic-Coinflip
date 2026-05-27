@@ -1,0 +1,219 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Mono:wght@400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-sans)}
+  .app{padding:1.5rem 1rem 2rem;max-width:680px}
+  h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+  .headline{font-family:'Playfair Display',serif;font-size:22px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px;text-align:center}
+  .sub{font-size:13px;color:var(--color-text-secondary);text-align:center;margin-bottom:1.5rem}
+  .coins-row{display:flex;justify-content:center;gap:24px;margin-bottom:1.5rem;flex-wrap:wrap}
+  .coin-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .coin-label{font-size:12px;color:var(--color-text-secondary);font-weight:500;letter-spacing:.04em}
+  .coin-scene{width:110px;height:110px;perspective:600px}
+  .coin-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.7s cubic-bezier(.4,0,.2,1)}
+  .coin-inner.flipping{animation:coinFlip 0.7s cubic-bezier(.4,0,.2,1) forwards}
+  @keyframes coinFlip{
+    0%{transform:rotateY(0)}
+    50%{transform:rotateY(900deg) scale(0.85)}
+    100%{transform:rotateY(var(--end-deg))}
+  }
+  .face{position:absolute;width:100%;height:100%;border-radius:50%;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:3px solid rgba(0,0,0,0.1)}
+  .face-front{z-index:1}
+  .face-back{transform:rotateY(180deg)}
+  .face-allele{font-family:'Playfair Display',serif;font-size:36px;font-weight:700;line-height:1}
+  .face-trait{font-size:10px;font-weight:500;letter-spacing:.03em;text-align:center;padding:0 6px}
+  .result-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;min-width:70px;justify-content:center;transition:all .3s}
+  .flip-btn{display:block;margin:0 auto 1.25rem;padding:10px 32px;font-size:15px;font-family:'Playfair Display',serif;cursor:pointer;border-radius:var(--border-radius-md)}
+  .results-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.25rem}
+  .res-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;text-align:center}
+  .res-card .res-title{font-size:11px;color:var(--color-text-secondary);margin-bottom:6px;font-weight:500;letter-spacing:.04em}
+  .res-card .res-combo{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+  .history-section{margin-top:1rem}
+  .history-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;font-weight:500}
+  .history-log{display:flex;flex-wrap:wrap;gap:6px;min-height:28px}
+  .hist-item{font-family:'DM Mono',monospace;font-size:12px;padding:3px 8px;border-radius:20px;background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)}
+  .stats-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .stat-pill{font-size:12px;padding:3px 10px;border-radius:20px;border:0.5px solid var(--color-border-secondary);color:var(--color-text-secondary)}
+  .stat-pill b{color:var(--color-text-primary);font-weight:500}
+  .reset-btn{background:none;border:none;font-size:12px;color:var(--color-text-secondary);cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;margin-left:auto;display:block;margin-top:8px}
+</style>
+
+<div class="app">
+  <h2 class="sr-only">Genetics coin flip simulator with three coins for flower color, fruit color, and aphid resistance alleles</h2>
+  <p class="headline">Mendelian Coin Toss</p>
+  <p class="sub">Flip to randomly assort alleles · Pea genetics simulation</p>
+
+  <div class="coins-row">
+    <div class="coin-wrap">
+      <span class="coin-label">Flower Color</span>
+      <div class="coin-scene">
+        <div class="coin-inner" id="coinF">
+          <div class="face face-front" style="background:#f8d7e8;border-color:#e5a5c4">
+            <span class="face-allele" style="color:#9b2c5e">F</span>
+            <span class="face-trait" style="color:#9b2c5e">Pink flowers</span>
+          </div>
+          <div class="face face-back" style="background:#f5f0ff;border-color:#c9b8ed">
+            <span class="face-allele" style="color:#6b48b5">f</span>
+            <span class="face-trait" style="color:#6b48b5">White flowers</span>
+          </div>
+        </div>
+      </div>
+      <div class="result-badge" id="badgeF" style="background:#fce8f1;color:#9b2c5e">F · Pink</div>
+    </div>
+
+    <div class="coin-wrap">
+      <span class="coin-label">Fruit Color</span>
+      <div class="coin-scene">
+        <div class="coin-inner" id="coinA">
+          <div class="face face-front" style="background:#fce8e8;border-color:#e8a0a0">
+            <span class="face-allele" style="color:#9b2323">A</span>
+            <span class="face-trait" style="color:#9b2323">Red fruit</span>
+          </div>
+          <div class="face face-back" style="background:#eef8ee;border-color:#9ecf9e">
+            <span class="face-allele" style="color:#1e7a1e">a</span>
+            <span class="face-trait" style="color:#1e7a1e">Green fruit</span>
+          </div>
+        </div>
+      </div>
+      <div class="result-badge" id="badgeA" style="background:#fce8e8;color:#9b2323">A · Red</div>
+    </div>
+
+    <div class="coin-wrap">
+      <span class="coin-label">Aphid Resistance</span>
+      <div class="coin-scene">
+        <div class="coin-inner" id="coinR">
+          <div class="face face-front" style="background:#fff3e0;border-color:#e8bc76">
+            <span class="face-allele" style="color:#8b5a0a">R</span>
+            <span class="face-trait" style="color:#8b5a0a">Not resistant</span>
+          </div>
+          <div class="face face-back" style="background:#e8f5e9;border-color:#88cc88">
+            <span class="face-allele" style="color:#1a6b2a">r</span>
+            <span class="face-trait" style="color:#1a6b2a">Aphid resistant</span>
+          </div>
+        </div>
+      </div>
+      <div class="result-badge" id="badgeR" style="background:#fff3e0;color:#8b5a0a">R · Not resistant</div>
+    </div>
+  </div>
+
+  <button class="flip-btn" id="flipBtn" onclick="doFlip()">Flip all coins ↺</button>
+
+  <div class="results-grid">
+    <div class="res-card">
+      <div class="res-title">Flower</div>
+      <div class="res-combo" id="resF">F</div>
+      <div style="font-size:11px;color:var(--color-text-secondary)" id="phenoF">Pink flowers</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">Fruit</div>
+      <div class="res-combo" id="resA">A</div>
+      <div style="font-size:11px;color:var(--color-text-secondary)" id="phenoA">Red fruit</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">Resistance</div>
+      <div class="res-combo" id="resR">R</div>
+      <div style="font-size:11px;color:var(--color-text-secondary)" id="phenoR">Not resistant</div>
+    </div>
+  </div>
+
+  <div class="history-section">
+    <div style="display:flex;align-items:center;margin-bottom:6px">
+      <span class="history-label">Flip history</span>
+      <button class="reset-btn" onclick="resetHistory()">clear</button>
+    </div>
+    <div class="history-log" id="histLog"></div>
+    <div class="stats-row" id="statsRow" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+const coins=[
+  {id:'coinF',badgeId:'badgeF',resId:'resF',phenoId:'phenoF',
+   sides:[
+    {allele:'F',pheno:'Pink flowers',badgeBg:'#fce8f1',badgeC:'#9b2c5e'},
+    {allele:'f',pheno:'White flowers',badgeBg:'#f0ecff',badgeC:'#6b48b5'}
+   ]},
+  {id:'coinA',badgeId:'badgeA',resId:'resA',phenoId:'phenoA',
+   sides:[
+    {allele:'A',pheno:'Red fruit',badgeBg:'#fce8e8',badgeC:'#9b2323'},
+    {allele:'a',pheno:'Green fruit',badgeBg:'#eef8ee',badgeC:'#1e7a1e'}
+   ]},
+  {id:'coinR',badgeId:'badgeR',resId:'resR',phenoId:'phenoR',
+   sides:[
+    {allele:'R',pheno:'Not resistant',badgeBg:'#fff3e0',badgeC:'#8b5a0a'},
+    {allele:'r',pheno:'Aphid resistant',badgeBg:'#e8f5e9',badgeC:'#1a6b2a'}
+   ]}
+];
+let currentSides=[0,0,0];
+let history=[];
+let flipping=false;
+
+function doFlip(){
+  if(flipping)return;
+  flipping=true;
+  const btn=document.getElementById('flipBtn');
+  btn.disabled=true;
+  const results=coins.map(()=>Math.random()<0.5?0:1);
+  coins.forEach((coin,i)=>{
+    const el=document.getElementById(coin.id);
+    const prevSide=currentSides[i];
+    const newSide=results[i];
+    let deg;
+    if(prevSide===0&&newSide===1) deg=180+360;
+    else if(prevSide===1&&newSide===0) deg=360+360;
+    else if(prevSide===0&&newSide===0) deg=720;
+    else deg=180+720;
+    el.style.setProperty('--end-deg',deg+'deg');
+    if(prevSide===1) el.style.transform=`rotateY(180deg)`;
+    else el.style.transform=`rotateY(0deg)`;
+    el.classList.remove('flipping');
+    void el.offsetWidth;
+    el.classList.add('flipping');
+    el.addEventListener('animationend',function handler(){
+      el.removeEventListener('animationend',handler);
+      el.classList.remove('flipping');
+      el.style.transform=newSide===1?'rotateY(180deg)':'rotateY(0deg)';
+    });
+  });
+  setTimeout(()=>{
+    results.forEach((side,i)=>{
+      const coin=coins[i];
+      const s=coin.sides[side];
+      currentSides[i]=side;
+      const badge=document.getElementById(coin.badgeId);
+      badge.textContent=s.allele+' · '+s.pheno.split(' ')[0]+' '+s.pheno.split(' ')[1];
+      badge.style.background=s.badgeBg;
+      badge.style.color=s.badgeC;
+      document.getElementById(coin.resId).textContent=s.allele;
+      document.getElementById(coin.phenoId).textContent=s.pheno;
+    });
+    const combo=results.map((s,i)=>coins[i].sides[s].allele).join('');
+    history.unshift(combo);
+    if(history.length>24)history.pop();
+    renderHistory();
+    flipping=false;
+    btn.disabled=false;
+  },750);
+}
+
+function renderHistory(){
+  const log=document.getElementById('histLog');
+  const statsRow=document.getElementById('statsRow');
+  log.innerHTML=history.map(h=>`<span class="hist-item">${h}</span>`).join('');
+  if(history.length>0){
+    statsRow.style.display='flex';
+    const counts={};
+    history.forEach(h=>{counts[h]=(counts[h]||0)+1;});
+    const top=Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,4);
+    statsRow.innerHTML=`<span class="stat-pill"><b>${history.length}</b> flips</span>`+
+      top.map(([k,v])=>`<span class="stat-pill"><b>${k}</b> × ${v}</span>`).join('');
+  }
+}
+
+function resetHistory(){
+  history=[];
+  document.getElementById('histLog').innerHTML='';
+  document.getElementById('statsRow').style.display='none';
+}
+</script>
